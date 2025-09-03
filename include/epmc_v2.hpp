@@ -107,7 +107,7 @@ public:
 
   int getPidMode(int motor_no)
   {
-    float mode = get("/mode", -1);
+    float mode = get("/mode", motor_no);
     return (int)mode;
   }
 
