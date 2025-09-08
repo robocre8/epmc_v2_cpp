@@ -48,11 +48,11 @@ int main(int argc, char **argv)
           auto [gx, gy, gz] = epmcV2.readGyro();
 
           std::cout << "ax: " << ax << std::fixed << std::setprecision(4);
-          std::cout << "\tay: " << ax << std::fixed << std::setprecision(4);
+          std::cout << "\tay: " << ay << std::fixed << std::setprecision(4);
           std::cout << "\taz: " << az << std::fixed << std::setprecision(4) << std::endl;
-          std::cout << "gx: " << ax << std::fixed << std::setprecision(4);
-          std::cout << "\tgy: " << ax << std::fixed << std::setprecision(4);
-          std::cout << "\tgz: " << az << std::fixed << std::setprecision(4) << std::endl;
+          std::cout << "gx: " << gx << std::fixed << std::setprecision(4);
+          std::cout << "\tgy: " << gy << std::fixed << std::setprecision(4);
+          std::cout << "\tgz: " << gz << std::fixed << std::setprecision(4) << std::endl;
           std::cout << std::endl;
         }
         else{
