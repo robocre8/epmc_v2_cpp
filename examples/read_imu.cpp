@@ -46,8 +46,10 @@ int main(int argc, char **argv)
         if (use_imu == 1){
           float ax, ay, az;
           float gx, gy, gz;
-          epmcV2.readAcc(ax, ay, az);
-          epmcV2.readGyro(gx, gy, gz);
+          // epmcV2.readAcc(ax, ay, az);
+          // epmcV2.readGyro(gx, gy, gz);
+
+          epmcV2.readImuData(ax, ay, az, gx, gy, gz);
 
           std::cout << "ax: " << ax << std::fixed << std::setprecision(4);
           std::cout << "\tay: " << ay << std::fixed << std::setprecision(4);
