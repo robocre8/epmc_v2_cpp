@@ -94,89 +94,81 @@ public:
     return serial_conn_.IsOpen();
   }
 
-  std::tuple<float, float, float, float> readPos()
+  void readPos(float &pos0, float& pos1, float &pos2, float &pos3)
   {
-    auto [pos0, pos1, pos2, pos3] = read_data_stream(READ_POS);
-    return {pos0, pos1, pos2, pos3};
+    read_data4(READ_POS, pos0, pos1, pos2, pos3);
   }
 
-  std::tuple<float, float, float, float> readVel()
+  void readVel(float &v0, float& v1, float &v2, float &v3)
   {
-    auto [v0, v1, v2, v3] = read_data_stream(READ_VEL);
-    return {v0, v1, v2, v3};
+    read_data4(READ_VEL, v0, v1, v2, v3);
   }
 
-  std::tuple<float, float, float, float> readUVel()
+  void readUVel(float &v0, float& v1, float &v2, float &v3)
   {
-    auto [v0, v1, v2, v3] = read_data_stream(READ_UVEL);
-    return {v0, v1, v2, v3};
+    read_data4(READ_UVEL, v0, v1, v2, v3);
   }
-
 
   int writePWM(int pwm0, int pwm1, int pwm2, int pwm3)
   {
-    float res = write_data_stream(WRITE_PWM, (float)pwm0, (float)pwm1, (float)pwm2, (float)pwm3);
+    float res = write_data4(WRITE_PWM, (float)pwm0, (float)pwm1, (float)pwm2, (float)pwm3);
     return (int)res;
   }
 
   int writeSpeed(float v0, float v1, float v2, float v3)
   {
-    float res = write_data_stream(WRITE_VEL, v0, v1, v2, v3);
+    float res = write_data4(WRITE_VEL, v0, v1, v2, v3);
     return (int)res;
   }
 
   int setCmdTimeout(int timeout_ms)
   {
-    float res = write_data(SET_CMD_TIMEOUT, 0, (float)timeout_ms);
+    float res = write_data1(SET_CMD_TIMEOUT, 0, (float)timeout_ms);
     return (int)res;
   }
 
   int getCmdTimeout()
   {
-    float timeout_ms = read_data(GET_CMD_TIMEOUT, 0);
+    float timeout_ms = read_data1(GET_CMD_TIMEOUT, 0);
     return (int)timeout_ms;
   }
 
   int setPidMode(int motor_no, int mode)
   {
-    float res = write_data(SET_PID_MODE, (uint8_t)motor_no, (float)mode);
+    float res = write_data1(SET_PID_MODE, (uint8_t)motor_no, (float)mode);
     return (int)res;
   }
 
   int getPidMode(int motor_no)
   {
-    float mode = read_data(GET_PID_MODE, (uint8_t)motor_no);
+    float mode = read_data1(GET_PID_MODE, (uint8_t)motor_no);
     return (int)mode;
   }
 
   int getUseIMU()
   {
-    float mode = read_data(GET_USE_IMU, 0);
+    float mode = read_data1(GET_USE_IMU, 0);
     return (int)mode;
   }
 
-  std::tuple<float, float, float> readAcc()
+  void readAcc(float &x, float &y, float &z)
   {
-    auto [ax, ay, az, dummy] = read_data_stream(READ_ACC);
-    return {ax, ay, az};
+    read_data3(READ_ACC, x, y, z);
   }
 
-  std::tuple<float, float, float> readAccVariance()
+  void readAccVariance(float &x, float &y, float &z)
   {
-    auto [ax, ay, az, dummy] = read_data_stream(READ_ACC_VAR);
-    return {ax, ay, az};
+    read_data3(READ_ACC_VAR, x, y, z);
   }
 
-  std::tuple<float, float, float> readGyro()
+  void readGyro(float &x, float &y, float &z)
   {
-    auto [gx, gy, gz, dummy] = read_data_stream(READ_GYRO);
-    return {gx, gy, gz};
+    read_data3(READ_GYRO, x, y, z);
   }
 
-  std::tuple<float, float, float> readGyroVariance()
+  void readGyroVariance(float &x, float &y, float &z)
   {
-    auto [gx, gy, gz, dummy] = read_data_stream(READ_GYRO_VAR);
-    return {gx, gy, gz};
+    read_data3(READ_GYRO_VAR, x, y, z);
   }
 
 private:
@@ -189,14 +181,14 @@ private:
       return sum & 0xFF;
   }
 
-  void send_packet(uint8_t cmd) {
+  void send_packet_without_payload(uint8_t cmd) {
       std::vector<uint8_t> packet = {START_BYTE, cmd, 0}; // no payload
       uint8_t checksum = calcChecksum(packet);
       packet.push_back(checksum);
       serial_conn_.Write(packet);
   }
 
-  void send_packet_stream(uint8_t cmd, const std::vector<uint8_t>& payload) {
+  void send_packet_with_payload(uint8_t cmd, const std::vector<uint8_t>& payload) {
       std::vector<uint8_t> packet = {START_BYTE, cmd, (uint8_t)payload.size()};
       packet.insert(packet.end(), payload.begin(), payload.end());
       uint8_t checksum = calcChecksum(packet);
@@ -204,7 +196,7 @@ private:
       serial_conn_.Write(packet);
   }
 
-  float read_packet() {
+  float read_packet1() {
       std::vector<uint8_t> payload(4);
       serial_conn_.Read(payload, 4);
       float val;
@@ -212,50 +204,61 @@ private:
       return val;
   }
 
-  std::tuple<float, float, float, float> read_packet_stream() {
+  void read_packet3(float &val0, float &val1, float &val2) {
+      std::vector<uint8_t> payload(12);
+      serial_conn_.Read(payload, 12);
+
+      std::memcpy(&val0, payload.data() + 0, sizeof(float));
+      std::memcpy(&val1, payload.data() + 4, sizeof(float));
+      std::memcpy(&val2, payload.data() + 8, sizeof(float));
+  }
+
+  void read_packet4(float &val0, float &val1, float &val2, float &val3) {
       std::vector<uint8_t> payload(16);
       serial_conn_.Read(payload, 16);
 
-      float vals[4];
-      std::memcpy(&vals[0], payload.data() + 0, 4);
-      std::memcpy(&vals[1], payload.data() + 4, 4);
-      std::memcpy(&vals[2], payload.data() + 8, 4);
-      std::memcpy(&vals[3], payload.data() + 12, 4);
-
-      return {vals[0], vals[1], vals[2], vals[3]};
+      std::memcpy(&val0, payload.data() + 0, sizeof(float));
+      std::memcpy(&val1, payload.data() + 4, sizeof(float));
+      std::memcpy(&val2, payload.data() + 8, sizeof(float));
+      std::memcpy(&val3, payload.data() + 12, sizeof(float));
   }
 
   // ------------------- High-Level Wrappers -------------------
-  float write_data(uint8_t cmd, uint8_t pos, float val) {
+  float write_data1(uint8_t cmd, uint8_t pos, float val) {
       std::vector<uint8_t> payload(sizeof(uint8_t) + sizeof(float));
       payload[0] = pos;
       std::memcpy(&payload[1], &val, sizeof(float));
-      send_packet_stream(cmd, payload);
-      return read_packet();
+      send_packet_with_payload(cmd, payload);
+      return read_packet1();
   }
 
-  float read_data(uint8_t cmd, uint8_t pos) {
+  float read_data1(uint8_t cmd, uint8_t pos) {
       float zero = 0.0f;
       std::vector<uint8_t> payload(sizeof(uint8_t) + sizeof(float));
       payload[0] = pos;
       std::memcpy(&payload[1], &zero, sizeof(float));
-      send_packet_stream(cmd, payload);
-      return read_packet();
+      send_packet_with_payload(cmd, payload);
+      return read_packet1();
   }
 
-  float write_data_stream(uint8_t cmd, float a, float b, float c, float d) {
+  float write_data4(uint8_t cmd, float a, float b, float c, float d) {
       std::vector<uint8_t> payload(4 * sizeof(float));
       std::memcpy(&payload[0],  &a, 4);
       std::memcpy(&payload[4],  &b, 4);
       std::memcpy(&payload[8],  &c, 4);
       std::memcpy(&payload[12], &d, 4);
-      send_packet_stream(cmd, payload);
-      return read_packet();
+      send_packet_with_payload(cmd, payload);
+      return read_packet1();
   }
 
-  std::tuple<float, float, float, float> read_data_stream(uint8_t cmd) {
-      send_packet(cmd);
-      return read_packet_stream();
+  void read_data3(uint8_t cmd, float &a, float &b, float &c) {
+      send_packet_without_payload(cmd);
+      return read_packet3(a, b, c);
+  }
+
+  void read_data4(uint8_t cmd, float &a, float &b, float &c, float &d) {
+      send_packet_without_payload(cmd);
+      return read_packet4(a, b, c, d);
   }
 
 };

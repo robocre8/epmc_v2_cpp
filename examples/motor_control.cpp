@@ -89,8 +89,10 @@ int main(int argc, char **argv)
       {
         // left wheels (motor 0 and motor 2)
         // right wheels (motor 1 and motor 3)
-        auto [pos0, pos1, pos2, pos3] = epmcV2.readPos();
-        auto [v0, v1, v2, v3] = epmcV2.readVel();
+        float pos0, pos1, pos2, pos3;
+        float v0, v1, v2, v3;
+        epmcV2.readPos(pos0, pos1, pos2, pos3);
+        epmcV2.readVel(v0, v1, v2, v3);
 
         std::cout << "----------------------------------" << std::endl;
         std::cout << "left wheels - motor 0 and motor 2" << std::endl;

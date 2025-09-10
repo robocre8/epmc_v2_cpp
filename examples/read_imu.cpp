@@ -44,8 +44,10 @@ int main(int argc, char **argv)
       try
       {
         if (use_imu == 1){
-          auto [ax, ay, az] = epmcV2.readAcc();
-          auto [gx, gy, gz] = epmcV2.readGyro();
+          float ax, ay, az;
+          float gx, gy, gz;
+          epmcV2.readAcc(ax, ay, az);
+          epmcV2.readGyro(gx, gy, gz);
 
           std::cout << "ax: " << ax << std::fixed << std::setprecision(4);
           std::cout << "\tay: " << ay << std::fixed << std::setprecision(4);
