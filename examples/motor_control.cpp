@@ -24,12 +24,9 @@ int main(int argc, char **argv)
   float lowTargetVel = 0.00; // in rad/sec
   float highTargetVel = 3.142; // in rad/sec
 
-  float angPos0, angPos1, angPos2, angPos3;
-  float angVel0, angVel1, angVel2, angVel3;
-
   auto prevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> duration;
-  float sampleTime = 0.05;
+  float sampleTime = 0.02;
 
   auto ctrlPrevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> ctrlDuration;
@@ -42,25 +39,17 @@ int main(int argc, char **argv)
   delay_ms(2000);
 
   // left wheels (motor 0 and motor 2)
-  epmcV2.writeSpeed(0, 0.00);
-  epmcV2.writeSpeed(2, 0.00);
-
   // right wheels (motor 1 and motor 3)
-  epmcV2.writeSpeed(1, 0.00);
-  epmcV2.writeSpeed(3, 0.00);
+  epmcV2.writeSpeed(0.0, 0.0, 0.0, 0.0);
 
-  // int motor_cmd_timeout_ms = 0;
-  // epmcV2.setCmdTimeout(motor_cmd_timeout_ms); // set motor command timeout
-  // motor_cmd_timeout_ms = epmcV2.getCmdTimeout();
-  // std::cout << "motor command timeout: " << motor_cmd_timeout_ms << " ms" << std::endl;
+  int motor_cmd_timeout_ms = 0;
+  epmcV2.setCmdTimeout(motor_cmd_timeout_ms); // set motor command timeout
+  motor_cmd_timeout_ms = epmcV2.getCmdTimeout();
+  std::cout << "motor command timeout: " << motor_cmd_timeout_ms << " ms" << std::endl;
 
   // left wheels (motor 0 and motor 2)
-  epmcV2.writeSpeed(0, lowTargetVel);
-  epmcV2.writeSpeed(2, lowTargetVel);
-
   // right wheels (motor 1 and motor 3)
-  epmcV2.writeSpeed(1, lowTargetVel);
-  epmcV2.writeSpeed(3, lowTargetVel);
+  epmcV2.writeSpeed(lowTargetVel, lowTargetVel, lowTargetVel, lowTargetVel);
 
   sendHigh = true;
 
@@ -76,24 +65,16 @@ int main(int argc, char **argv)
       if (sendHigh)
       {
         // left wheels (motor 0 and motor 2)
-        epmcV2.writeSpeed(0, highTargetVel);
-        epmcV2.writeSpeed(2, highTargetVel);
-
         // right wheels (motor 1 and motor 3)
-        epmcV2.writeSpeed(1, highTargetVel);
-        epmcV2.writeSpeed(3, highTargetVel);
+        epmcV2.writeSpeed(highTargetVel, highTargetVel, highTargetVel, highTargetVel);
 
         sendHigh = false;
       }
       else
       {
         // left wheels (motor 0 and motor 2)
-        epmcV2.writeSpeed(0, lowTargetVel);
-        epmcV2.writeSpeed(2, lowTargetVel);
-
         // right wheels (motor 1 and motor 3)
-        epmcV2.writeSpeed(1, lowTargetVel);
-        epmcV2.writeSpeed(3, lowTargetVel);
+        epmcV2.writeSpeed(lowTargetVel, lowTargetVel, lowTargetVel, lowTargetVel);
 
         sendHigh = true;
       }
@@ -107,34 +88,28 @@ int main(int argc, char **argv)
       try
       {
         // left wheels (motor 0 and motor 2)
-        angPos0 = epmcV2.readPos(0);
-        angVel0 = epmcV2.readVel(0);
+        // right wheels (motor 1 and motor 3)
+        float pos0, pos1, pos2, pos3;
+        float v0, v1, v2, v3;
+        // epmcV2.readPos(pos0, pos1, pos2, pos3);
+        // epmcV2.readVel(v0, v1, v2, v3);
+        epmcV2.readMotorData(pos0, pos1, pos2, pos3, v0, v1, v2, v3);
 
-        angPos2 = epmcV2.readPos(2);
-        angVel2 = epmcV2.readVel(2);
-
-        // left wheels (motor 1 and motor 3)
-        angPos1 = epmcV2.readPos(1);
-        angVel1 = epmcV2.readVel(1);
-
-        angPos3 = epmcV2.readPos(3);
-        angVel3 = epmcV2.readVel(3);
+        std::cout << "----------------------------------" << std::endl;
+        std::cout << "left wheels - motor 0 and motor 2" << std::endl;
+        std::cout << "motor0_readings: [" << pos0 << std::fixed << std::setprecision(4) << "," << v0 << std::fixed << std::setprecision(4) << "]" << std::endl;
+        std::cout << "motor2_readings: [" << pos2 << std::fixed << std::setprecision(4) << "," << v2 << std::fixed << std::setprecision(4) << "]" << std::endl;
+        std::cout << std::endl;
+        std::cout << "right wheels - motor 1 and motor 3" << std::endl;
+        std::cout << "motor1_readings: [" << pos1 << std::fixed << std::setprecision(4) << "," << v1 << std::fixed << std::setprecision(4) << "]" << std::endl;
+        std::cout << "motor3_readings: [" << pos3 << std::fixed << std::setprecision(4) << "," << v3 << std::fixed << std::setprecision(4) << "]" << std::endl;
+        std::cout << "----------------------------------" << std::endl;
+        std::cout << std::endl;
       }
       catch (...)
       {
         
       }
-
-      std::cout << "----------------------------------" << std::endl;
-      std::cout << "left wheels - motor 0 and motor 2" << std::endl;
-      std::cout << "motor0_readings: [" << angPos0 << std::fixed << std::setprecision(4) << "," << angVel0 << std::fixed << std::setprecision(4) << "]" << std::endl;
-      std::cout << "motor2_readings: [" << angPos2 << std::fixed << std::setprecision(4) << "," << angVel2 << std::fixed << std::setprecision(4) << "]" << std::endl;
-      std::cout << std::endl;
-      std::cout << "right wheels - motor 1 and motor 3" << std::endl;
-      std::cout << "motor1_readings: [" << angPos1 << std::fixed << std::setprecision(4) << "," << angVel1 << std::fixed << std::setprecision(4) << "]" << std::endl;
-      std::cout << "motor3_readings: [" << angPos3 << std::fixed << std::setprecision(4) << "," << angVel3 << std::fixed << std::setprecision(4) << "]" << std::endl;
-      std::cout << "----------------------------------" << std::endl;
-      std::cout << std::endl;
 
       prevTime = std::chrono::system_clock::now();
     }

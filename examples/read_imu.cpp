@@ -18,12 +18,9 @@ void delay_ms(unsigned long milliseconds)
 
 int main(int argc, char **argv)
 {
-  float ax, ay, az;
-  float gx, gy, gz;
-
   auto prevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> duration;
-  float sampleTime = 0.01;
+  float sampleTime = 0.02;
 
   std::string port = "/dev/ttyUSB0";
   epmcV2.connect(port);
@@ -47,31 +44,28 @@ int main(int argc, char **argv)
       try
       {
         if (use_imu == 1){
-          ax = epmcV2.readAcc(0);
-          ay = epmcV2.readAcc(1);
-          az = epmcV2.readAcc(2);
+          float ax, ay, az;
+          float gx, gy, gz;
+          // epmcV2.readAcc(ax, ay, az);
+          // epmcV2.readGyro(gx, gy, gz);
 
-          gx = epmcV2.readGyro(0);
-          gy = epmcV2.readGyro(1);
-          gz = epmcV2.readGyro(2);
+          epmcV2.readImuData(ax, ay, az, gx, gy, gz);
+
+          std::cout << "ax: " << ax << std::fixed << std::setprecision(4);
+          std::cout << "\tay: " << ay << std::fixed << std::setprecision(4);
+          std::cout << "\taz: " << az << std::fixed << std::setprecision(4) << std::endl;
+          std::cout << "gx: " << gx << std::fixed << std::setprecision(4);
+          std::cout << "\tgy: " << gy << std::fixed << std::setprecision(4);
+          std::cout << "\tgz: " << gz << std::fixed << std::setprecision(4) << std::endl;
+          std::cout << std::endl;
+        }
+        else{
+          std::cout << "IMU Mode Not Activated" << std::endl;
         }
       }
       catch (...)
       {
       }
-      if (use_imu == 1){
-        std::cout << "ax: " << ax << std::fixed << std::setprecision(4);
-        std::cout << "\tay: " << ax << std::fixed << std::setprecision(4);
-        std::cout << "\taz: " << az << std::fixed << std::setprecision(4) << std::endl;
-        std::cout << "gx: " << ax << std::fixed << std::setprecision(4);
-        std::cout << "\tgy: " << ax << std::fixed << std::setprecision(4);
-        std::cout << "\tgz: " << az << std::fixed << std::setprecision(4) << std::endl;
-        std::cout << std::endl;
-      }
-      else{
-        std::cout << "IMU Mode Not Activated" << std::endl;
-      }
-      
 
       prevTime = std::chrono::system_clock::now();
     }
