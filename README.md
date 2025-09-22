@@ -22,8 +22,6 @@
     ````
     ````
     ./build/motor_control
-    or
-    ./build/read_imu
     ````
 
 - You can follow the pattern used in the example `motor_control.cpp` in your own code.
