@@ -41,8 +41,9 @@ int main(int argc, char **argv)
   // left wheels (motor 0 and motor 2)
   // right wheels (motor 1 and motor 3)
   epmcV2.writeSpeed(0.0, 0.0, 0.0, 0.0);
+  epmcV2.clearDataBuffer();
 
-  int motor_cmd_timeout_ms = 0;
+  int motor_cmd_timeout_ms = 6000;
   epmcV2.setCmdTimeout(motor_cmd_timeout_ms); // set motor command timeout
   motor_cmd_timeout_ms = epmcV2.getCmdTimeout();
   std::cout << "motor command timeout: " << motor_cmd_timeout_ms << " ms" << std::endl;
