@@ -275,7 +275,7 @@ private:
       std::memcpy(&val5, payload.data() + 20, sizeof(float));
       std::memcpy(&val6, payload.data() + 24, sizeof(float));
       std::memcpy(&val7, payload.data() + 28, sizeof(float));
-      std::memcpy(&val7, payload.data() + 32, sizeof(float));
+      std::memcpy(&val8, payload.data() + 32, sizeof(float));
   }
 
   // ------------------- High-Level Wrappers -------------------
