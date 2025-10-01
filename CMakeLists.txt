@@ -5,3 +5,6 @@ include_directories(include)
 
 add_executable( motor_control examples/motor_control.cpp )
 target_link_libraries( motor_control serial )
+
+add_executable( read_imu examples/read_imu.cpp )
+target_link_libraries( read_imu serial )
