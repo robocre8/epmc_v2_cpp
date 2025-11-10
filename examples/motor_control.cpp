@@ -21,11 +21,11 @@ int main(int argc, char **argv)
 
   bool sendHigh = false;
 
-  float lowTargetVel = -10.00; // in rad/sec
-  float highTargetVel = 10.00; // in rad/sec
+  float lowTargetVel = 0.00; // in rad/sec
+  float highTargetVel = 5.00; // in rad/sec
 
-  float pos0, pos1, pos2, pos3;
-  float vel0, vel1, vel2, vel3;
+  float pos0, pos1;
+  float vel0, vel1;
 
   auto prevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> duration;
@@ -36,24 +36,24 @@ int main(int argc, char **argv)
   float ctrlSampleTime = 4.0;
 
   // std::string port = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:1.4:1.0-port0";
-  std::string port = "/dev/ttyUSB0";
+  std::string port = "/dev/ttyACM0";
   epmcV2.connect(port);
 
-  for (int i=0; i<4; i+=1){
+  for (int i=0; i<3; i+=1){
     delay_ms(1000);
     std::cout << "configuring controller: " << i+1 << " sec" << std::endl;
   }
   
 
-  epmcV2.writeSpeed(0.0, 0.0, 0.0, 0.0);
+  epmcV2.writeSpeed(0.0, 0.0);
   epmcV2.clearDataBuffer();
 
-  int motor_cmd_timeout_ms = 5000;
+  int motor_cmd_timeout_ms = 10000;
   epmcV2.setCmdTimeout(motor_cmd_timeout_ms); // set motor command timeout
   motor_cmd_timeout_ms = epmcV2.getCmdTimeout();
   std::cout << "motor command timeout: " << motor_cmd_timeout_ms << " ms" << std::endl;
 
-  epmcV2.writeSpeed(lowTargetVel, lowTargetVel, lowTargetVel, lowTargetVel);
+  epmcV2.writeSpeed(lowTargetVel, lowTargetVel);
 
   sendHigh = true;
 
@@ -70,20 +70,19 @@ int main(int argc, char **argv)
       {
         if (sendHigh)
         {
-          epmcV2.writeSpeed(highTargetVel, highTargetVel, highTargetVel, highTargetVel);
-
+          epmcV2.writeSpeed(highTargetVel, highTargetVel);
+          highTargetVel *= -1;
           sendHigh = false;
         }
         else
         {
-          epmcV2.writeSpeed(lowTargetVel, lowTargetVel, lowTargetVel, lowTargetVel);
-
+          epmcV2.writeSpeed(lowTargetVel, lowTargetVel);
           sendHigh = true;
         }
       }
       catch(const std::exception& e)
       {
-        std::cout << "Error occurred: ";
+        std::cout << "Error occurred: " << e.what() << std::endl;
       }
 
       ctrlPrevTime = std::chrono::system_clock::now();
@@ -94,22 +93,16 @@ int main(int argc, char **argv)
     {
       try
       {
-        bool success = epmcV2.readMotorData(pos0, pos1, pos2, pos3, vel0, vel1, vel2, vel3);
-
-        if (success){
-         
-        }
+        epmcV2.readMotorData(pos0, pos1, vel0, vel1);
         std::cout << "----------------------------------" << std::endl;
-        std::cout << "motor0_readings: [" << pos0 << std::fixed << std::setprecision(4) << "," << vel0 << std::fixed << std::setprecision(4) << "]" << std::endl;
-        std::cout << "motor1_readings: [" << pos1 << std::fixed << std::setprecision(4) << "," << vel1 << std::fixed << std::setprecision(4) << "]" << std::endl;
-        std::cout << "motor2_readings: [" << pos2 << std::fixed << std::setprecision(4) << "," << vel2 << std::fixed << std::setprecision(4) << "]" << std::endl;
-        std::cout << "motor3_readings: [" << pos3 << std::fixed << std::setprecision(4) << "," << vel3 << std::fixed << std::setprecision(4) << "]" << std::endl;
+        std::cout << "motor0_readings: [" << pos0 << "," << vel0 << "]" << std::endl;
+        std::cout << "motor1_readings: [" << pos1 << "," << vel1 << "]" << std::endl;
         std::cout << "----------------------------------" << std::endl;
         std::cout << std::endl;
       }
-      catch (int e)
+      catch(const std::exception& e)
       {
-        std::cout << "Error occurred: ";
+        std::cout << "Error occurred: " << e.what() << std::endl;
       }
 
       prevTime = std::chrono::system_clock::now();
