@@ -29,11 +29,11 @@ int main(int argc, char **argv)
 
   auto prevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> duration;
-  float sampleTime = 0.02;
+  float sampleTime = 0.015;
 
   auto ctrlPrevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> ctrlDuration;
-  float ctrlSampleTime = 4.0;
+  float ctrlSampleTime = 5.0;
 
   // std::string port = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:1.4:1.0-port0";
   std::string port = "/dev/ttyACM0";
