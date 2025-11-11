@@ -7,9 +7,9 @@
 
 #include <iomanip>
 
-#include "epmc_v2.hpp"
+#include "epmc_v2_i2c.hpp"
 
-EPMC_V2 epmcV2;
+EPMC_V2 epmcV2(0x55, "/dev/i2c-1");;
 
 void delay_ms(unsigned long milliseconds)
 {
@@ -34,10 +34,6 @@ int main(int argc, char **argv)
   auto ctrlPrevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> ctrlDuration;
   float ctrlSampleTime = 5.0;
-
-  // std::string port = "/dev/serial/by-path/pci-0000:00:14.0-usb-0:1.4:1.0-port0";
-  std::string port = "/dev/ttyACM0";
-  epmcV2.connect(port);
 
   for (int i=0; i<3; i+=1){
     delay_ms(1000);
