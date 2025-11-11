@@ -9,7 +9,7 @@
 
 #include "epmc_v2_i2c.hpp"
 
-EPMC_V2 epmcV2(0x55, "/dev/i2c-1");;
+EPMC_V2 epmcV2(0x55, "/dev/i2c-1");
 
 void delay_ms(unsigned long milliseconds)
 {
