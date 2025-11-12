@@ -19,8 +19,12 @@ inline double round_to_dp(double value, int decimal_places) {
 class EPMC_V2
 {
 public:
-    explicit EPMC_V2(int slave_addr, const std::string &device = "/dev/i2c-1");
-    ~EPMC_V2();
+    EPMC_V2() = default;
+
+    void connect(int slave_addr, const std::string device);
+    void connect(int slave_addr);
+    void disconnect();
+    bool connected() const;
 
     void writeSpeed(float v0, float v1);
     void writePWM(int pwm0, int pwm1);
@@ -37,6 +41,7 @@ public:
 private:
     int fd;
     int slaveAddr;
+    std::string device;
 
     uint8_t computeChecksum(uint8_t *packet, uint8_t length);
     void send_packet_without_payload(uint8_t cmd);
@@ -63,9 +68,12 @@ private:
 
 // ----------------------------------------------------
 
-EPMC_V2::EPMC_V2(int slave_addr, const std::string &device)
-    : slaveAddr(slave_addr)
+
+void EPMC_V2::connect(int slave_addr, std::string dev)
 {
+    slaveAddr = slave_addr;
+    device = dev;
+
     fd = open(device.c_str(), O_RDWR);
     if (fd < 0) {
         perror("Failed to open I2C device");
@@ -79,10 +87,32 @@ EPMC_V2::EPMC_V2(int slave_addr, const std::string &device)
     }
 }
 
-EPMC_V2::~EPMC_V2()
+void EPMC_V2::connect(int slave_addr)
 {
-    if (fd >= 0)
+    slaveAddr = slave_addr;
+    device = "/dev/i2c-1";
+
+    fd = open(device.c_str(), O_RDWR);
+    if (fd < 0) {
+        perror("Failed to open I2C device");
+        exit(1);
+    }
+
+    if (ioctl(fd, I2C_SLAVE, slaveAddr) < 0) {
+        perror("Failed to set I2C slave address");
         close(fd);
+        exit(1);
+    }
+}
+
+void EPMC_V2::disconnect()
+{
+    close(fd);
+}
+
+bool EPMC_V2::connected() const
+{
+    return (fd >= 0);
 }
 
 uint8_t EPMC_V2::computeChecksum(uint8_t *packet, uint8_t length)

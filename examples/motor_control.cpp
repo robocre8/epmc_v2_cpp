@@ -9,7 +9,7 @@
 
 #include "epmc_v2_i2c.hpp"
 
-EPMC_V2 epmcV2(0x55);
+EPMC_V2 epmcV2;
 
 void delay_ms(unsigned long milliseconds)
 {
@@ -34,6 +34,8 @@ int main(int argc, char **argv)
   auto ctrlPrevTime = std::chrono::system_clock::now();
   std::chrono::duration<double> ctrlDuration;
   float ctrlSampleTime = 5.0;
+
+  epmcV2.connect(0x55);
 
   for (int i=0; i<3; i+=1){
     delay_ms(1000);

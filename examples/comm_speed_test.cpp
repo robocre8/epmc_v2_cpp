@@ -9,7 +9,7 @@
 
 #include "epmc_v2_i2c.hpp"
 
-EPMC_V2 epmcV2(0x55);
+EPMC_V2 epmcV2;
 
 void delay_ms(unsigned long milliseconds)
 {
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     std::cout << "configuring controller: " << i+1 << " sec" << std::endl;
   }
   
-
+  epmcV2.connect(0x55);
   epmcV2.writeSpeed(0.0, 0.0);
   epmcV2.clearDataBuffer();
 
