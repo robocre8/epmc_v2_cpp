@@ -116,44 +116,54 @@ public:
     return serial_conn_.IsOpen();
   }
 
-  void writePWM(int pwm0, int pwm1)
+  void writePWM(int pwm0, int pwm1, int pwm2, int pwm3)
   {
-    write_data2(WRITE_PWM, (float)pwm0, (float)pwm1);
+    write_data4(WRITE_PWM, (float)pwm0, (float)pwm1, (float)pwm2, (float)pwm3);
   }
 
-  void writeSpeed(float v0, float v1)
+  void writeSpeed(float v0, float v1, float v2, float v3)
   {
-    write_data2(WRITE_VEL, v0, v1);
+    write_data4(WRITE_VEL, v0, v1, v2, v3);
   }
 
-  void readPos(float &pos0, float& pos1)
+  void readPos(float &pos0, float& pos1, float &pos2, float& pos3)
   {
-    read_data2(READ_POS, pos0, pos1);
+    read_data4(READ_POS, pos0, pos1, pos2, pos3);
     pos0 = round_to_dp(pos0, 4);
     pos1 = round_to_dp(pos1, 4);
+    pos2 = round_to_dp(pos2, 4);
+    pos3 = round_to_dp(pos3, 4);
   }
 
-  void readVel(float &v0, float& v1)
+  void readVel(float &v0, float& v1, float &v2, float& v3)
   {
-    read_data2(READ_VEL, v0, v1);
+    read_data4(READ_VEL, v0, v1, v2, v3);
     v0 = round_to_dp(v0, 4);
     v1 = round_to_dp(v1, 4);
+    v2 = round_to_dp(v2, 4);
+    v3 = round_to_dp(v3, 4);
   }
 
-  void readUVel(float &v0, float& v1)
+  void readUVel(float &v0, float& v1, float &v2, float& v3)
   {
-    read_data2(READ_UVEL, v0, v1);
+    read_data4(READ_UVEL, v0, v1, v2, v3);
     v0 = round_to_dp(v0, 4);
     v1 = round_to_dp(v1, 4);
+    v2 = round_to_dp(v2, 4);
+    v3 = round_to_dp(v3, 4);
   }
 
-  void readMotorData(float &pos0, float& pos1, float &v0, float& v1)
+  void readMotorData(float &pos0, float& pos1, float &pos2, float& pos3, float &v0, float& v1, float &v2, float& v3)
   {
-    read_data4(READ_MOTOR_DATA, pos0, pos1, v0, v1);
+    read_data8(READ_MOTOR_DATA, pos0, pos1, pos2, pos3, v0, v1, v2, v3);
     pos0 = round_to_dp(pos0, 4);
     pos1 = round_to_dp(pos1, 4);
+    pos2 = round_to_dp(pos2, 4);
+    pos3 = round_to_dp(pos3, 4);
     v0 = round_to_dp(v0, 4);
     v1 = round_to_dp(v1, 4);
+    v2 = round_to_dp(v2, 4);
+    v3 = round_to_dp(v3, 4);
   }
 
   bool setCmdTimeout(int timeout_ms)
@@ -221,17 +231,6 @@ private:
       std::memcpy(&val, payload.data(), sizeof(float)); // little-endian assumed
   }
 
-  void read_packet2(float &val0, float &val1) {
-      std::vector<uint8_t> payload;
-      serial_conn_.Read(payload, 8, timeout_ms_);
-      if (payload.size() < 8) {
-        std::cerr << "[EPMC SERIAL ERROR]: Timeout while reading 2 values" << std::endl;
-        throw EPMCSerialError("[EPMC SERIAL ERROR]: Timeout while reading 2 values");
-      }
-      std::memcpy(&val0, payload.data() + 0, sizeof(float));
-      std::memcpy(&val1, payload.data() + 4, sizeof(float));
-  }
-
   void read_packet4(float &val0, float &val1, float &val2, float &val3) {
       std::vector<uint8_t> payload;
       serial_conn_.Read(payload, 16, timeout_ms_);
@@ -243,6 +242,23 @@ private:
       std::memcpy(&val1, payload.data() + 4, sizeof(float));
       std::memcpy(&val2, payload.data() + 8, sizeof(float));
       std::memcpy(&val3, payload.data() + 12, sizeof(float));
+  }
+
+  void read_packet8(float &val0, float &val1, float &val2, float &val3, float &val4, float &val5, float &val6, float &val7) {
+      std::vector<uint8_t> payload;
+      serial_conn_.Read(payload, 32, timeout_ms_);
+      if (payload.size() < 32) {
+        std::cerr << "[EPMC SERIAL ERROR]: Timeout while reading 8 values" << std::endl;
+        throw EPMCSerialError("[EPMC SERIAL ERROR]: Timeout while reading 8 values");
+      }
+      std::memcpy(&val0, payload.data() + 0, sizeof(float));
+      std::memcpy(&val1, payload.data() + 4, sizeof(float));
+      std::memcpy(&val2, payload.data() + 8, sizeof(float));
+      std::memcpy(&val3, payload.data() + 12, sizeof(float));
+      std::memcpy(&val4, payload.data() + 16, sizeof(float));
+      std::memcpy(&val5, payload.data() + 20, sizeof(float));
+      std::memcpy(&val6, payload.data() + 24, sizeof(float));
+      std::memcpy(&val7, payload.data() + 28, sizeof(float));
   }
 
   // ------------------- High-Level Wrappers -------------------
@@ -267,18 +283,6 @@ private:
       return val;
   }
 
-  void write_data2(uint8_t cmd, float a, float b) {
-      std::vector<uint8_t> payload(2 * sizeof(float));
-      std::memcpy(&payload[0],  &a, 4);
-      std::memcpy(&payload[4],  &b, 4);
-      send_packet_with_payload(cmd, payload);
-  }
-
-  void read_data2(uint8_t cmd, float &a, float &b) {
-      send_packet_without_payload(cmd);
-      read_packet2(a, b);
-  }
-
   void write_data4(uint8_t cmd, float a, float b, float c, float d) {
       std::vector<uint8_t> payload(4 * sizeof(float));
       std::memcpy(&payload[0],  &a, 4);
@@ -291,6 +295,11 @@ private:
   void read_data4(uint8_t cmd, float &a, float &b, float &c, float &d) {
       send_packet_without_payload(cmd);
       read_packet4(a, b, c, d);
+  }
+
+  void read_data8(uint8_t cmd, float &a, float &b, float &c, float &d, float &e, float &f, float &g, float &h) {
+      send_packet_without_payload(cmd);
+      read_packet8(a, b, c, d, e, f, g, h);
   }
 
 };
